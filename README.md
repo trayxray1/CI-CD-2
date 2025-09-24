@@ -41,3 +41,27 @@ pytest -q
 - Если вы хотите использовать Docker Hub, в workflow замените шаг логина на DockerHub и добавьте секреты `DOCKERHUB_USERNAME` и `DOCKERHUB_PASSWORD`.
 
 Дальше: могу инициализировать git, закоммитить файлы в репозиторий, создать ветку `main`, или добавить пример deploy (Docker Compose / k8s + ArgoCD). Выберите следующий шаг.
+
+Deploy
+------
+В workflow добавлен job `deploy`, который копирует `docker-compose.yml` на удалённый сервер и выполняет `docker-compose pull && docker-compose up -d`.
+
+Требования к серверу (удалённому хосту):
+- Docker установлен
+- docker-compose (или Docker Compose plugin) установлен
+- Пользователь с правами на запуск docker (или использование sudo)
+
+Необходимые секреты в GitHub репозитории (Settings → Secrets → Actions):
+- `DEPLOY_HOST` — IP или хостнейм сервера
+- `DEPLOY_USER` — пользователь для SSH
+- `DEPLOY_PATH` — целевая директория на сервере (например `/home/ubuntu/app`)
+- `DEPLOY_SSH_KEY` — приватный SSH ключ (формат PEM) для доступа к серверу
+
+Как подготовить и запустить деплой вручную (PowerShell):
+
+```powershell
+# На сервере установите Docker и docker-compose
+# Скопируйте публичный ключ в ~/.ssh/authorized_keys для пользователя
+
+# После добавления секретов в GitHub — пуш в main запустит workflow и, при наличии секретов, выполнит deploy автоматически.
+```

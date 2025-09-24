@@ -71,3 +71,30 @@ jobs:
           format: 'table'
           exit-code: '1'
           severity: 'CRITICAL,HIGH'
+
+  deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    # only run deploy when DEPLOY_HOST secret is set
+    if: ${{ secrets.DEPLOY_HOST != '' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Start ssh-agent
+        uses: webfactory/ssh-agent@v0.8.1
+        with:
+          ssh-private-key: ${{ secrets.DEPLOY_SSH_KEY }}
+
+      - name: Ensure remote directory exists
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} "mkdir -p ${{ secrets.DEPLOY_PATH }}"
+
+      - name: Copy docker-compose to server
+        run: |
+          scp -o StrictHostKeyChecking=no docker-compose.yml ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:${{ secrets.DEPLOY_PATH }}/docker-compose.yml
+
+      - name: Deploy on remote (pull image & restart)
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} \
+            "cd ${{ secrets.DEPLOY_PATH }} && docker pull ghcr.io/${{ github.repository_owner }}/${{ github.repository }}:latest || true && docker-compose pull && docker-compose up -d --remove-orphans"

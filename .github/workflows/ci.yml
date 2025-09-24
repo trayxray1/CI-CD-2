@@ -96,30 +96,29 @@ jobs:
   deploy:
     needs: build-and-push
     runs-on: ubuntu-latest
-    # only run deploy when DEPLOY_HOST secret is set
-    env:
-      DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
-      DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
-      DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
-    if: ${{ env.DEPLOY_HOST != '' }}
     steps:
       - name: Checkout
+        if: ${{ secrets.DEPLOY_HOST != '' }}
         uses: actions/checkout@v4
 
       - name: Start ssh-agent
+        if: ${{ secrets.DEPLOY_HOST != '' }}
         uses: webfactory/ssh-agent@v0.8.1
         with:
           ssh-private-key: ${{ secrets.DEPLOY_SSH_KEY }}
 
       - name: Ensure remote directory exists
+        if: ${{ secrets.DEPLOY_HOST != '' }}
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} "mkdir -p ${{ secrets.DEPLOY_PATH }}"
 
       - name: Copy docker-compose to server
+        if: ${{ secrets.DEPLOY_HOST != '' }}
         run: |
           scp -o StrictHostKeyChecking=no docker-compose.yml ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:${{ secrets.DEPLOY_PATH }}/docker-compose.yml
 
       - name: Deploy on remote (pull image & restart)
+        if: ${{ secrets.DEPLOY_HOST != '' }}
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} \
-            "cd ${{ secrets.DEPLOY_PATH }} && docker pull ghcr.io/${{ github.repository_owner }}/${{ github.repository }}:latest || true && docker-compose pull && docker-compose up -d --remove-orphans"
+            "cd ${{ secrets.DEPLOY_PATH }} && docker pull ghcr.io/${{ github.repository }}:latest || true && docker-compose pull && docker-compose up -d --remove-orphans"

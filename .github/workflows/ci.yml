@@ -80,7 +80,7 @@ jobs:
     needs: build-and-push
     runs-on: ubuntu-latest
     # only run deploy when DEPLOY_HOST secret is set
-    if: ${{ secrets.DEPLOY_HOST != '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' }}
+    if: ${{ secrets.DEPLOY_HOST != '' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4

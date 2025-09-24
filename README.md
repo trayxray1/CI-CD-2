@@ -40,8 +40,6 @@ pytest -q
 - По умолчанию workflow использует `GITHUB_TOKEN` и даёт права `packages: write`.
 - Если вы хотите использовать Docker Hub, в workflow замените шаг логина на DockerHub и добавьте секреты `DOCKERHUB_USERNAME` и `DOCKERHUB_PASSWORD`.
 
-Дальше: могу инициализировать git, закоммитить файлы в репозиторий, создать ветку `main`, или добавить пример deploy (Docker Compose / k8s + ArgoCD). Выберите следующий шаг.
-
 Deploy
 ------
 В workflow добавлен job `deploy`, который копирует `docker-compose.yml` на удалённый сервер и выполняет `docker-compose pull && docker-compose up -d`.
